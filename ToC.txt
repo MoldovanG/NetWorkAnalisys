@@ -1,0 +1,35 @@
+Table of Contents
+
+Part I Network Analysis Fundamentals
+  * Chapter 2
+    - Building the Data Set
+    - Simple Visualization of the Data Set
+    - Basic Characteristics: Size; Density; Components; Diameter; Transitivity
+  * Chapter 3
+    - Different Representations of the Network: Sociomatrices; Edge-Lists
+    - Network Data: Node Attributes; Tie Attributes
+    - Filtering Operations on Networks: Based On Node Values; Removing Isolates; Base On Edge Values 
+Part II Visualization
+  * Chapter 4
+    - Guidelines for an easy to understand Network Visualization (for presentation, pag. 47)
+    - Plotting the Network with different layouts: Circle; Eigen; Random; Fruchterman-Reingold; etc.
+  * Chapter 5
+    - Ilustrate the Design Elements: Node Color; Node Shape; Node Size; Node Label; Edge Width; Edge Color; Edge Type; Legend
+  * Chapter 6
+    - Interactive Network Graphics: tkplot; networkD3; visNetwork
+    - Specialized Network Diagrams: Arc Diagrams; Chord Diagrams; Heatmaps
+Part III Description and Analysis
+  * Chapter 7
+    - Centrality Measures: Degree Centrality; Closeness Centrality; Betweenness Centrality
+    - Cupoints and Bridges
+  * Chapter 8
+    - Cliques and k-Cores
+    - Modularity and Community Detection Algorithms
+  * Chapter 9
+    - Affiliation Networks
+    - Projections in Affiliation Networks
+Part IV Modeling
+  * Chapter 10
+    - Role of Network Models (for presentation, pag. 147)
+    - Generative Models: Erdos-Renyi; Small-World Model (Watts-Strogatz); Scale-Free Models (Barabasi)
+    - Comparing Random Models with Empirical Networks

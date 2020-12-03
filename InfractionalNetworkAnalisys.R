@@ -1,9 +1,6 @@
-library(network)
-library(statnet)
-library(intergraph)
-library(igraph)
 library(RColorBrewer)
-library(networkD3)
+library(statnet)
+
 netmat <- rbind(c(1,2),
                 c(1,3),
                 c(2,3),
@@ -133,12 +130,11 @@ print(as.matrix(netsym, matrix.type="edgelist"))
 
 
 print("Filtering networks")
-netsymigraph <- asIgraph(netsym)
 print(get.vertex.attribute(netsym, "role"))
 comercianti <- get.inducedSubgraph(netsym, which (netsym %v% "role"=="C"))
 gplot(comercianti,displaylabels=TRUE, main="Comercianti")
-delete.vertices(comercianti, isolates(comercianti), main="Retelele de comercianti")
-gplot(comercianti, displaylabels = TRUE)
+delete.vertices(comercianti, isolates(comercianti))
+gplot(comercianti, displaylabels = TRUE, main="Grupuri de comercianti")
 
 # Capitolul 4
 print("NETWORK VISUALISATION")
@@ -162,7 +158,8 @@ plot(netsym,vertex.cex=6,main="Too large nodes")
 plot(netsym,vertex.cex=2,main="Just right node size")
 
 sidenum <- 3:7
-plot(netsym,usearrows=FALSE,vertex.cex=4,main="Different node shapes",
+rolecat <- as.factor(get.vertex.attribute(asIgraph(netsym),"role"))
+plot(netsym,usearrows=FALSE,vertex.cex=4, main="Different node type",
      displaylabels=F,vertex.sides=sidenum[rolecat])
 
 n_edge <- network.edgecount(netsym)
@@ -184,7 +181,7 @@ gplot(netsym,vertex.cex=0.8,gmode="graph", main="Different edge type",
 
 
 my_pal <- brewer.pal(5,"Dark2")
-rolecat <- as.factor(get.vertex.attribute(asIgraph(netsym),"role"))
+rolecat <- as.factor(get.vertex.attribute(netsym,"role"))
 plot(netsym,
      main = "Infractional network",
      usearrows=FALSE, 
@@ -197,12 +194,23 @@ legend("bottomleft",legend=c("C","CT","CR","A","D"),
        col=my_pal,pch=19,pt.cex=1.5,bty="n",
        title="Criminal Role")
 
+# necessary, caused conflicts
+detach("package:statnet", unload=TRUE)
+
+
+library(network)
+
+library(intergraph)
+library(igraph)
+
+library(networkD3)
+
 # Capitolul 6
+# Tkplot
 inetsym <- asIgraph(netsym)
 Coord <- tkplot(inetsym, vertex.size=3,
                 vertex.label=V(inetsym)$role,
                 vertex.color="darkgreen")
-# Tkplot
 MCoords <- tkplot.getcoords(Coord)
 plot(inetsym, layout=MCoords, vertex.size=5,main="Interactive tkplot",
      vertex.label=NA, vertex.color="lightblue")
@@ -214,44 +222,63 @@ inetsym_edge <- inetsym_edge - 1
 inetsym_edge <- data.frame(inetsym_edge)
 print(V(inetsym)$role)
 inetsym_nodes <- data.frame(NodeID=as.numeric(V(inetsym)-1),
-                          Group=V(netsym)$role,
+                          Group=V(inetsym)$role,
                           Nodesize=(degree(inetsym)))
-forceNetwork(Links = inetsym_edge, Nodes = inetsym_nodes,
+net_D3 <- forceNetwork(Links = inetsym_edge, Nodes = inetsym_nodes,
              Source = "X1", Target = "X2",
              NodeID = "NodeID",Nodesize = "Nodesize",
              radiusCalculation="Math.sqrt(d.nodesize)*3",
              Group = "Group", opacity = 0.8,
              legend=TRUE)
 
+saveNetwork(net_D3,file = 'Net_test2.html',
+            selfcontained=TRUE)
+
 
 #Visnetwork
+library(visNetwork)
+inetsym_edge <- get.edgelist(inetsym)
+inetsym_edge <- data.frame(from = inetsym_edge[,1],
+                         to = inetsym_edge[,2])
+inetsym_nodes <- data.frame(id = as.numeric(V(inetsym)))
+visNetwork(inetsym_nodes, inetsym_edge, width = "100%")
 net <- visNetwork(inetsym_nodes, inetsym_edge,
                   width = "100%",legend=TRUE)
 net <- visOptions(net,highlightNearest = TRUE)
 net <- visInteraction(net,navigationButtons = TRUE)
 library(htmlwidgets)
 saveWidget(net, "Net_test3.html")
-#library(devtools)
-#install_github("gastonstat/arcdiagram")
+
 
 #Arcdiagram
+library(devtools)
+install_github("gastonstat/arcdiagram")
 library(arcdiagram)
 inetsym <- asIgraph(netsym)
 netsym_edge <- get.edgelist(netsym)
 arcplot(netsym)
 
-#TODO: fix arcdiagram, implement chord diagram, heatmap and chapter 7
+#Chord diagram
+library(circlize)
+library(statnet)
+sociomat <- as.sociomatrix(netsym,attrname='passes')
+chordDiagram(sociomat)
+detach("package:statnet", unload=TRUE)
+detach("package:circlize", unload=TRUE)
+
+
 #Chapter 7
+detach("package:networkD3", unload=TRUE)
+detach("package:igraph", unload=TRUE)
 print("CENTRALITY DEGREES")
-net_mat <- network(net)
-degree(net_mat, gmode="graph")
-closeness(net_mat, gmode="graph")
-betweenness(net, gmode="graph")
+print(degree(netsym, gmode="graph"))
+print(closeness(netsym, gmode="graph"))
+print(betweenness(netsym, gmode="graph"))
 
 #Cutpoints
-cpnet <- cutpoints(net,mode="graph",
+cpnet <- cutpoints(netsym,mode="graph",
                    return.indicator=TRUE)
-gplot(net,gmode="graph",vertex.col=cpnet+2,coord=coords,
+gplot(netsym,gmode="graph",vertex.col=cpnet+2,coord=MCoords,
       jitter=FALSE,displaylabels=TRUE)
 
 #Bridges
@@ -274,16 +301,6 @@ bridges <- function(dat,mode="graph",
          dat2 <- dat
          delete.edges(dat2,i)
          b_vec[i] <- (components(dat2) != cmp_cnt)
-      }
-   }
-   else {
-      cmp_cnt <- components(dat,connected=connected)
-      b_vec <- rep(FALSE,e_cnt)
-      for(i in 1:e_cnt){
-         dat2 <- dat
-         delete.edges(dat2,i)
-         b_vec[i] <- (components(dat2,connected=connected)
-                      != cmp_cnt)
       }
    }
    return(b_vec)

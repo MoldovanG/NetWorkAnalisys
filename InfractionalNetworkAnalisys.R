@@ -311,3 +311,47 @@ plot(cle, inetsym,vertex.label=V(inetsym)$name,main="Leading Eigenvector")
 plot(cs, inetsym,vertex.label=V(inetsym)$name,main="Spinglass")
 plot(cw, inetsym,vertex.label=V(inetsym)$name,main="Walktrap")
 par(op)
+
+
+# Chapter 10
+
+# Trying to generate a similar network using Erdos-Renyi method
+no_nodes <- length(V(inetsym))
+no_edges <- length(E(inetsym))
+generated_network <- erdos.renyi.game(n=no_nodes,no_edges,type='gnm')
+op <- par(mfrow=c(1,2))
+plot(inetsym,vertex.label=NA,vertex.size=5)
+plot(generated_network, vertex.label=NA, vertex.size=5)
+par(op)
+
+# Trying to generate a similar network using Small-World Model
+avg_degree <- no_edges/no_nodes*2
+g1 <- watts.strogatz.game(dim=1, size=no_nodes, nei=avg_degree/2, p=.05)
+g2 <- watts.strogatz.game(dim=1, size=no_nodes, nei=avg_degree/2, p=.15)
+g3 <- watts.strogatz.game(dim=1, size=no_nodes, nei=avg_degree/2, p=.30)
+op <- par(mfrow=c(2,2))
+plot(inetsym,vertex.label=NA,vertex.size=5)
+plot(g1, vertex.label=NA, vertex.size=5)
+plot(g2, vertex.label=NA, vertex.size=5)
+plot(g3, vertex.label=NA, vertex.size=5)
+par(op)
+
+# Trying to generate a similar network using Scale-Free Model
+barabasi_network <- barabasi.game(no_nodes, directed=FALSE)
+op <- par(mfrow=c(1,2))
+plot(inetsym,vertex.label=NA, vertex.size=5)
+plot(barabasi_network,vertex.label=NA, vertex.size=5)
+par(op)
+
+
+# Comparing random models with the empirical network
+list_network <- c(generated_network, g2, barabasi_network, inetsym)
+comparison_table <- data.frame(
+  Name = c("Erdos-Renyi", "Small world", "Scale-free model", "Empiric network"),
+  Size = c(length(V(generated_network)), length(V(g2)), length(V(barabasi_network)), length(V(inetsym))),
+  Density = c(gden(asNetwork(generated_network)),gden(asNetwork(g2)),gden(asNetwork(barabasi_network)),gden(asNetwork(inetsym))),
+  Avg_Degree = c(length(E(generated_network))/length(V(generated_network)),length(E(g2))/length(V(g2)),length(E(barabasi_network))/length(V(barabasi_network)),length(E(inetsym))/length(V(inetsym))),
+  Transitivity = c(transitivity(generated_network), transitivity(g2), transitivity(barabasi_network), transitivity(inetsym)),
+  Isolates = c(sum(degree(generated_network)==0),sum(degree(g2)==0),sum(degree(barabasi_network)==0),sum(degree(inetsym)==0))
+)
+comparison_table

@@ -9,6 +9,8 @@ output: slidy_presentation
 knitr::opts_chunk$set(echo = TRUE)
 ```
 
+# Capitolul 1
+```{r}
 library(statnet)
 library(RColorBrewer)
 library(network)
@@ -136,8 +138,11 @@ plot(netsym,
      displaylabels=T,
      vertex.cex = 1.5)
 
+```
+
 
 # Capitolul 2 
+```{r}
 print("BASIC CHARACTERISTICS")
 
 print("Size:")
@@ -155,8 +160,10 @@ print(max(gd$gdist))
 
 print("Transitivity:")
 print(gtrans(netsym, mode="graph"))
+```
 
 # Capitolul 3
+```{r}
 print("DIFFERENT REPRESENTATIONS")
 
 print("Sociomatrix:")
@@ -173,11 +180,13 @@ comercianti <- get.inducedSubgraph(netsym, which (netsym %v% "role"=="C"))
 gplot(comercianti,displaylabels=TRUE, main="Comercianti")
 delete.vertices(comercianti, isolates(comercianti))
 gplot(comercianti, displaylabels = TRUE, main="Grupuri de comercianti")
+```
 
 # Capitolul 4
-print("NETWORK VISUALISATION")
+```{r}
 gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
       vertex.cex=1.5,mode='circle',main="circle")
+
 gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
       vertex.cex=1.5,mode='eigen',main="eigen")
 gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
@@ -189,8 +198,16 @@ gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
 gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
       vertex.cex=1.5,mode='kamadakawai',
       main='kamadakawai')
+```
 
 # Capitolul 5
+```{r}
+library(network)
+
+library(intergraph)
+library(igraph)
+
+library(networkD3)
 plot(netsym,vertex.cex=0.5,main="Too small nodes")
 plot(netsym,vertex.cex=6,main="Too large nodes")
 plot(netsym,vertex.cex=2,main="Just right node size")
@@ -219,7 +236,7 @@ gplot(netsym,vertex.cex=0.8,gmode="graph", main="Different edge type",
 
 
 my_pal <- brewer.pal(5,"Dark2")
-rolecat <- as.factor(get.vertex.attribute(netsym,"role"))
+rolecat <- as.factor(get.vertex.attribute(asIgraph(netsym),"role"))
 plot(netsym,
      main = "Infractional network",
      usearrows=FALSE, 
@@ -236,15 +253,13 @@ legend("bottomleft",legend=c("Aducator clienti","Comerciant","Cartita","Contraba
 detach("package:statnet", unload=TRUE)
 
 
-library(network)
 
-library(intergraph)
-library(igraph)
+```
 
-library(networkD3)
 
 # Capitolul 6
-# Tkplot
+## Tkplot
+```{r}
 inetsym <- asIgraph(netsym)
 Coord <- tkplot(inetsym, vertex.size=3,
                 vertex.label=V(inetsym)$role,
@@ -288,24 +303,33 @@ library(htmlwidgets)
 saveWidget(net, "Net_test3.html")
 
 
-#Arcdiagram
+
+```
+## Arcdiagram
+
+install.packages("devtools")
 library(devtools)
 install_github("gastonstat/arcdiagram")
+
 library(arcdiagram)
 inetsym <- asIgraph(netsym)
 netsym_edge <- get.edgelist(netsym)
 arcplot(netsym)
 
-#Chord diagram
+
+## Chord diagram
+
+```{r}
 library(circlize)
 library(statnet)
 sociomat <- as.sociomatrix(netsym,attrname='passes')
 chordDiagram(sociomat)
 detach("package:statnet", unload=TRUE)
 detach("package:circlize", unload=TRUE)
+```
 
-
-#Chapter 7
+# Chapter 7
+```{r}
 detach("package:networkD3", unload=TRUE)
 detach("package:igraph", unload=TRUE)
 print("CENTRALITY DEGREES")
@@ -346,7 +370,6 @@ bridges <- function(dat,mode="graph",
 bridges(netsym)
 
 
-### Chapter 7
 colors <- c("blue", "red")
 
 # Determining the centre nodes using the degree
@@ -441,28 +464,29 @@ bridges(netsym)
 brnet <- bridges(netsym)
 gplot(netsym,gmode="graph",vertex.col="red",edge.col=brnet+2,jitter=FALSE,
       displaylabels=TRUE,label=netsym %v% "abrev_name",edge.lwd=3*brnet+2)
+```
 
 
-
-### Chapter 8
-# Setup
-# Import igraph for this part of the project
+# Chapter 8
+```{r}
+## Setup
+### Import igraph for this part of the project
 library(igraph)
 library(intergraph)
-# Transfer network from statnet format to igraph format
+### Transfer network from statnet format to igraph format
 inetsym <- as.undirected(asIgraph(netsym))
 V(inetsym)$name <- netsym %v% "abrev_name"
 V(inetsym)$fullname <- network.vertex.names(netsym)
 V(inetsym)$role <- rolecat
 
-# Cliques
-# Determine the cliques from the network as well as the biggest clique.
+## Cliques
+### Determine the cliques from the network as well as the biggest clique.
 clique.number(inetsym)
 cliques(inetsym, min=3)
 maximal.cliques(inetsym, min=3)
 largest.cliques(inetsym)
 
-# k-Cores
+## k-Cores
 coreness <- graph.coreness(inetsym)
 table(coreness)
 maxCoreness <- max(coreness)
@@ -480,7 +504,7 @@ plot(i2_3,layout=lay[which(coreness > 1),],vertex.label=coreness[which(coreness 
 plot(i3_3,layout=lay[which(coreness > 2),],vertex.label=coreness[which(coreness > 2)],vertex.color=colors[coreness[which(coreness > 2)]],main="k-cores 3")
 par(op)
 
-# Modularity is a measure that describes how good is a network clusterization
+## Modularity is a measure that describes how good is a network clusterization
 colors <- brewer.pal(5,"Dark2")
 roles <- c("C","CR","CT","A","D")
 V(inetsym)[V(inetsym)$role == "C"]$color <- colors[1]
@@ -498,11 +522,11 @@ V(inetsym)[V(inetsym)$role == "D"]$group <- 5
 op <- par(mfrow=c(1,1))
 plot(inetsym,vertex.color=V(inetsym)$color,vertex.size=10)
 
-# Modularity based on the role of each person
+## Modularity based on the role of each person
 modularity(inetsym, V(inetsym)$group)
-# The result is smaller than 0, which means a bad clusterization result using this method
+## The result is smaller than 0, which means a bad clusterization result using this method
 
-# Community detection algorithms
+## Community detection algorithms
 cw <- cluster_walktrap(inetsym)
 modularity(cw)
 membership(cw)
@@ -537,11 +561,12 @@ plot(cle, inetsym,vertex.label=V(inetsym)$name,main="Leading Eigenvector")
 plot(cs, inetsym,vertex.label=V(inetsym)$name,main="Spinglass")
 plot(cw, inetsym,vertex.label=V(inetsym)$name,main="Walktrap")
 par(op)
-
+```
 
 # Chapter 10
 
-# Trying to generate a similar network using Erdos-Renyi method
+```{r}
+## Trying to generate a similar network using Erdos-Renyi method
 no_nodes <- length(V(inetsym))
 no_edges <- length(E(inetsym))
 generated_network <- erdos.renyi.game(n=no_nodes,no_edges,type='gnm')
@@ -550,7 +575,7 @@ plot(inetsym,vertex.label=NA,vertex.size=5)
 plot(generated_network, vertex.label=NA, vertex.size=5)
 par(op)
 
-# Trying to generate a similar network using Small-World Model
+## Trying to generate a similar network using Small-World Model
 avg_degree <- no_edges/no_nodes*2
 g1 <- watts.strogatz.game(dim=1, size=no_nodes, nei=avg_degree/2, p=.05)
 g2 <- watts.strogatz.game(dim=1, size=no_nodes, nei=avg_degree/2, p=.15)
@@ -562,7 +587,7 @@ plot(g2, vertex.label=NA, vertex.size=5)
 plot(g3, vertex.label=NA, vertex.size=5)
 par(op)
 
-# Trying to generate a similar network using Scale-Free Model
+## Trying to generate a similar network using Scale-Free Model
 barabasi_network <- barabasi.game(no_nodes, directed=FALSE)
 op <- par(mfrow=c(1,2))
 plot(inetsym,vertex.label=NA, vertex.size=5)
@@ -570,7 +595,7 @@ plot(barabasi_network,vertex.label=NA, vertex.size=5)
 par(op)
 
 
-# Comparing random models with the empirical network
+## Comparing random models with the empirical network
 list_network <- c(generated_network, g2, barabasi_network, inetsym)
 comparison_table <- data.frame(
   Name = c("Erdos-Renyi", "Small world", "Scale-free model", "Empiric network"),
@@ -581,4 +606,4 @@ comparison_table <- data.frame(
   Isolates = c(sum(degree(generated_network)==0),sum(degree(g2)==0),sum(degree(barabasi_network)==0),sum(degree(inetsym)==0))
 )
 comparison_table
-
+```

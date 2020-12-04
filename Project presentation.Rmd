@@ -305,16 +305,6 @@ saveWidget(net, "Net_test3.html")
 
 
 ```
-## Arcdiagram
-
-install.packages("devtools")
-library(devtools)
-install_github("gastonstat/arcdiagram")
-
-library(arcdiagram)
-inetsym <- asIgraph(netsym)
-netsym_edge <- get.edgelist(netsym)
-arcplot(netsym)
 
 
 ## Chord diagram

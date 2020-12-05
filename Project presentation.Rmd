@@ -162,16 +162,8 @@ print("Transitivity:")
 print(gtrans(netsym, mode="graph"))
 ```
 
-# 3. Different represantions
-```{r}
-
-print("Sociomatrix:")
-print(as.sociomatrix(netsym))
-
-print("Edge list:")
-print(as.matrix(netsym, matrix.type="edgelist"))
-
-
+# 3. Network Data Management
+```{r, results='hide'}
 
 print("Filtering networks")
 print(get.vertex.attribute(netsym, "role"))
@@ -223,13 +215,14 @@ gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
 ```
 
 # 5.Effective network graphic design
-```{r}
+```{r, results='hide', message=FALSE}
 library(network)
 
 library(intergraph)
 library(igraph)
 
 library(networkD3)
+
 plot(netsym,vertex.cex=0.5,main="Too small nodes")
 plot(netsym,vertex.cex=6,main="Too large nodes")
 plot(netsym,vertex.cex=2,main="Just right node size")
@@ -285,6 +278,10 @@ legend("bottomleft",legend=c("Aducator clienti","Comerciant","Cartita","Contraba
        col=my_pal,pch=19,pt.cex=1.5,bty="n",
        title="Criminal Role")
 
+
+```
+
+```{r, echo=FALSE}
 # necessary, caused conflicts
 detach("package:statnet", unload=TRUE)
 
@@ -292,8 +289,8 @@ detach("package:statnet", unload=TRUE)
 
 
 # 6.Advanced Network Graphics
-# Tkplot
-```{r}
+## Tkplot
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 inetsym <- asIgraph(netsym)
 Coord <- tkplot(inetsym, vertex.size=3,
                 vertex.label=V(inetsym)$role,
@@ -321,7 +318,9 @@ net_D3 <- forceNetwork(Links = inetsym_edge, Nodes = inetsym_nodes,
 saveNetwork(net_D3,file = 'Net_test2.html',
             selfcontained=TRUE)
 
+```
 
+```{r}
 #Visnetwork
 library(visNetwork)
 inetsym_edge <- get.edgelist(inetsym)
@@ -329,6 +328,9 @@ inetsym_edge <- data.frame(from = inetsym_edge[,1],
                          to = inetsym_edge[,2])
 inetsym_nodes <- data.frame(id = as.numeric(V(inetsym)))
 visNetwork(inetsym_nodes, inetsym_edge, width = "100%")
+```
+
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 net <- visNetwork(inetsym_nodes, inetsym_edge,
                   width = "100%",legend=TRUE)
 net <- visOptions(net,highlightNearest = TRUE)
@@ -341,9 +343,9 @@ saveWidget(net, "Net_test3.html")
 ```
 
 
-# Chord diagram
+## Chord diagram
 
-```{r}
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 library(circlize)
 library(statnet)
 sociomat <- as.sociomatrix(netsym,attrname='passes')
@@ -353,7 +355,9 @@ detach("package:circlize", unload=TRUE)
 ```
 
 # 7. Actor proeminence
-```{r}
+
+# Cutpoints
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 detach("package:networkD3", unload=TRUE)
 detach("package:igraph", unload=TRUE)
 print("CENTRALITY DEGREES")
@@ -361,13 +365,16 @@ print(degree(netsym, gmode="graph"))
 print(closeness(netsym, gmode="graph"))
 print(betweenness(netsym, gmode="graph"))
 
-#Cutpoints
+
 cpnet <- cutpoints(netsym,mode="graph",
                    return.indicator=TRUE)
-gplot(netsym,gmode="graph",vertex.col=cpnet+2,coord=MCoords,
+gplot(netsym,gmode="graph",vertex.col=cpnet+2,coord=MCoords, main="Cutpoints",
       jitter=FALSE,displaylabels=TRUE)
+```
 
-#Bridges
+
+
+```{r, echo=FALSE}
 bridges <- function(dat,mode="graph",
                     connected=c("strong", "weak")) {
    e_cnt <- network.edgecount(dat)
@@ -391,12 +398,12 @@ bridges <- function(dat,mode="graph",
    }
    return(b_vec)
 }
-bridges(netsym)
-
 
 colors <- c("blue", "red")
+```
 
 # Determining the centre nodes using the degree
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 deg <- degree(netsym, gmode="graph")
 plot(netsym,
      usearrows=FALSE, 
@@ -404,8 +411,10 @@ plot(netsym,
      label = netsym %v% "abrev_name",
      displaylabels=T,
      vertex.cex = deg/2)
+```
 
 # Determining the centre nodes using the closeness function
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 cls <- closeness(netsym, gmode="graph")
 plot(netsym,
      usearrows=FALSE, 
@@ -413,8 +422,10 @@ plot(netsym,
      label = netsym %v% "abrev_name",
      displaylabels=T,
      vertex.cex = cls*10)
+```
 
 # Determining the centre nodes using the betweenness function
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 bet <- betweenness(netsym, gmode="graph")
 plot(netsym,
      usearrows=FALSE, 
@@ -454,37 +465,10 @@ df.promsort <- rbind(df.promsort,data.frame(
 ))
 df.promsort
 
-# Cutpoints are nodes that if removed will affect the conectivity of the network
-# In the graphic below, it is displayed with green the cutpoint nodes.
-cpnet <- cutpoints(netsym,mode="graph",return.indicator=TRUE)
-gplot(netsym,gmode="graph",vertex.cex=cpnet+2,vertex.col=cpnet+2,jitter=FALSE,
-      displaylabels=TRUE,label=netsym %v% "abrev_name")
+```
 
-# Bridges are edges that if removed will affect the conectivity of the network
-# In the graphic below it is displayed with green the edges that are bridges.
-bridges <- function(dat,mode="graph",connected=c("strong", "weak")) {
-        e_cnt <- network.edgecount(dat)
-        if (mode == "graph") {
-                cmp_cnt <- components(dat)
-                b_vec <- rep(FALSE,e_cnt)
-                for(i in 1:e_cnt){
-                        dat2 <- dat
-                        delete.edges(dat2,i)
-                        b_vec[i] <- (components(dat2) != cmp_cnt)
-                }
-        }
-        else {
-                cmp_cnt <- components(dat,connected=connected)
-                b_vec <- rep(FALSE,e_cnt)
-                for(i in 1:e_cnt){
-                        dat2 <- dat
-                        delete.edges(dat2,i)
-                        b_vec[i] <- (components(dat2,connected=connected) != cmp_cnt)
-                }
-        }
-        return (b_vec)
-}
-bridges(netsym)
+# Bridges
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 brnet <- bridges(netsym)
 gplot(netsym,gmode="graph",vertex.col="red",edge.col=brnet+2,jitter=FALSE,
       displaylabels=TRUE,label=netsym %v% "abrev_name",edge.lwd=3*brnet+2)

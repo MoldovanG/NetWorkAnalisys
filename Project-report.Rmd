@@ -172,13 +172,13 @@ plot(netsym,
 
 # Capitolul 2: Analiza primara a retelei
 
-O prima analiza asupra retelei este realizarea rezumatului in 5 puncte. Functiile prezente in libraria statnet faciliteaza realizarea acesteia. Analizand aceste valori, putem avea o prima impresie despre structura retelei si despre modul de organizarea a acesteia. O descriere sumara a celor cinci valori poate fi data astfel:
+O prima analiza asupra retelei este realizarea rezumatului in 5 puncte. Functiile prezente in libraria statnet faciliteaza realizarea acesteia. Analizand aceste valori, putem avea o prima impresie despre structura retelei si despre modul de organizarea a acesteia. O descriere sumara a celor cinci valori poate fi urmatoarea:
 
 * Size : Numarul de noduri din cadrul retelei
 * Density: Raportul dintre numarul de legaturi din retea si numarul de legaturi in cazul unei retele complet conectate
 * Components: Numarul de componente conexe ale retelei
 * Diameter: Cea mai mare distanta calculata pe cel mai scurt drum dintre oricare doua noduri ale retelei
-* Transitivity: Raportul dintre numarul de triunghiuri inchise (trei noduri interconectate fiecare cu fiecare) si numarul de triunghiuri deschise si inchise (subgraf conex format din trei noduri)
+* Transitivity: Raportul dintre numarul de triunghiuri inchise (trei noduri interconectate complet) si numarul de triunghiuri deschise si inchise (subgraf conex format din trei noduri)
 ```{r}
 ## "Five-Number Summary"
 
@@ -430,7 +430,7 @@ plot(netsym,
      vertex.cex = sqrt(bet+1))
 ```
 
-Cu exceptia acestora, exista si alte masuri ale centralitati, insa rezultatele multora dintre acestea sunt corelate cu cele ale metodele prezentate anterior. Acest fapt este evidentiat si in calculele prezentate anterior si poate fi explicat prin faptul ca aceste masuratori, pornesc de la aceste metode de baza si aduc imbunatatiri.
+Cu exceptia acestora, exista si alte masuri ale centralitatii, insa rezultatele multora dintre acestea sunt corelate cu cele ale metodele prezentate anterior. Acest fapt este evidentiat si in calculele prezentate in continuare si poate fi explicat prin faptul ca aceste masuratori pornesc de la metodele de baza si aduc imbunatatiri.
 ```{r}
 # Computing the level of correlation between multiple centrality measures
 df.prom <- data.frame(
@@ -476,7 +476,7 @@ gplot(netsym,gmode="graph",vertex.cex=cpnet+2,vertex.col=cpnet+2,jitter=FALSE,
       displaylabels=TRUE,label=netsym %v% "abrev_name")
 ```
 
-Similar cu nodurile critice, se poate defini si notiunea de muchie critica. Aceasta reprezinta o legatura care daca este eliminata, va strica conectivitatea retelei. Codul urmator ilustreaza cum pot fi determinate aceste muchii critice in reteaua prezentata.
+Similar cu nodurile critice, se poate defini si notiunea de muchie critica. Aceasta reprezinta o legatura care daca este eliminata, va afecta conectivitatea retelei. Codul urmator ilustreaza cum pot fi determinate aceste muchii critice in reteaua prezentata.
 ```{r}
 # Bridges are edges that if removed will affect the conectivity of the network
 # In the graphic below it is displayed with green the edges that are bridges.
@@ -610,9 +610,11 @@ plot(cw, inetsym,vertex.label=NA,main="Walktrap")
 ```
 
 # Capitolul 9: "Affiliation Networks"
+
 Conceptele din acest capitol nu pot fi ilustrate pe reteaua traficantilor, de aceea exemple prezentate utilizeaza un set de date ilustrat in cartea din bibliografie. Aceste notiuni sunt aplicate pe grafuri in care legaturile dintre actanti nu sunt directe, ci sunt date de faptul ca cele doua persoane sunt parte al aceluiasi grup (de exemplu: clasa, departament, oras).
 
-Un exemplu foarte uzual pentru acest tip de retele sunt cele denumite "2-Mode Networks". Acestea se remarca prin faptul ca nodurilor din cadrul lor reprezinta doua clase diferite. Mai jos este prezentata o retea formata din elevi si clase, fiind realizate legaturi doar intre obiecte de tipuri diferite.
+Un exemplu foarte uzual pentru acest tip de retele sunt cele denumite "2-Mode Networks" (nodurile din cadrul lor reprezinta doua clase diferite, fiind realizate legaturi doar intre obiecte de tipuri diferite). Mai jos este prezentata o retea formata din elevi si clase.
+
 ```{r}
 C1 <- c(1,1,1,0,0,0)
 C2 <- c(0,1,1,1,0,0)
@@ -623,7 +625,8 @@ row.names(aff.df) <- c("S1","S2","S3","S4","S5","S6")
 aff.df
 ```
 
-O consecinta a faptului ca avem doua tipuri de noduri, iar legaturile se realizeaza doar intre tipuri diferite de noduri, este ca graful obtinut este bipartit, dupa cum se poate observa si din graficul urmator.
+Graful obtinut este bipartit, dupa cum se poate observa si din graficul urmator.
+
 ```{r include=FALSE, echo=FALSE}
 library(igraph)
 ```
@@ -641,6 +644,7 @@ plot(bn,vertex.color=colors[V(bn)$type+1],vertex.shape=shapes[V(bn)$type+1],
 ```
 
 Similar cu celelalte retele, si "affiliation networks" pot fi create atat pornind de la o matrice de incidenta, cat si de la o lista de muchii. In cele ce urmeaza sunt prezentate exemple pentru ambele metode.
+
 ```{r}
 ## Creating Affiliation Networks from Incidence Matrices
 bn <- graph.incidence(aff.df)
@@ -669,6 +673,7 @@ graph.density(bn)==graph.density(bn2)
 ```
 
 O analiza interesanta ce poate fi realizata pe un "affiliation network", este un studiu pe componente ce poate fi realizat cu ajutorul proiectiilor. O proiectie permite analiza doar unuia dintre cele doua tipuri de noduri prezente intr-o retea "2-Mode". Legaturile dintre noduri in cadrul unei proiectii sunt date de legaturile indirecte din reteaua initiala (daca doi studenti stuadiaza in aceeasi clasa, atunci intre acestia va exista o legatura directa in proiectie). In cele ce urmeaza vom ilustra proiectiile pe reteaua de studenti si clase.
+
 ```{r}
 ## Making the projections on both components
 bn.pr <- bipartite.projection(bn)
@@ -690,6 +695,7 @@ plot(bn.class,vertex.color="red",vertex.shape="square",main="Classes",
 ```
 
 In cele ce urmeaza, vom prezenta analiza unui set de date de tipul "2-Mode" ce cuprinde filme din perioada 1999-2014, precum si actorii care au avut cele mai importante roluri in aceste filme.
+
 ```{r}
 ## Importing the data set
 data(hwd)
@@ -712,7 +718,8 @@ h2 <- subgraph.edges(h1, E(h1)[inc(V(h1)[name %in% c("The Wolf of Wall Street",
 plot(h2, layout = layout_with_kk)
 ```
 
-Mai departe este prezentata o analiza a actorilor, cu accent pe cei care au jucat in cele mai multe filme si cei care au jucat in cele mai apreciate filme
+Mai departe este prezentata o analiza a actorilor, cu accent pe cei care au jucat in cele mai multe filme si cei care au jucat in cele mai apreciate filme.
+
 ```{r}
 ## Basic properties of actor projection
 graph.density(h1)
@@ -738,6 +745,7 @@ pop_actor[order(pop_actor$Popularity,decreasing=TRUE),]
 ```
 
 In plus, putem analiza si relatii de dependenta intre datele pe care le extragem. De exemplu, se poate face o regresie intre numarul de filme in care a jucat un actor si media scorului acestor filme, pentru a determina daca exista sau nu o legatura liniara intre acestea. Dupa cum se poate vedea in urma analizei urmatoare, precum si din afisarea grafica a rezultatelor, nu se poate extrage o astfel de legatura.
+
 ```{r warning=FALSE}
 for (i in 161:1365) {
   V(h1)[i]$avgrating <- mean(V(h1)[nei(i)]$IMDBrating)
@@ -749,7 +757,8 @@ scatter.smooth(num,avgpop,col="lightblue",ylim=c(2,10),span=.8,
                xlab="Number of Movies",ylab="Avg. Popularity")
 ```
 
-In ultima parte a analizei, ne vom uita la proiectiile acestei retele, in particular la cea a filmelor. Iar la aceasta vom analiza mai multe statistici, pentru ca in final sa vizualizam reteaua formata din filmele care au in comun actori cu macar alte 5 filme, din care se poate observa ca fac partea cu preponderenta serii de filme precum: Star Wars, Harry Potter, The Hobbit, etc.
+In ultima parte a analizei, ne vom uita la proiectiile acestei retele, in particular la cea a filmelor. In cazul acesta, vom analiza mai multe statistici, pentru ca in final sa vizualizam reteaua formata din filmele care au in comun actori cu macar cinci alte filme, din care se poate observa ca fac parte cu preponderenta serii de filme precum: Star Wars, Harry Potter, The Hobbit etc.
+
 ```{r}
 ## Extract projections for the network
 h1.pr <- bipartite.projection(h1)
@@ -831,7 +840,7 @@ plot(ws_net2, vertex.label=NA, vertex.size=10)
 plot(ws_net3, vertex.label=NA, vertex.size=10)
 ```
 
-Din rezultatele grafice, se poate observa ca nici acest model nu este unul multumitor. In plus, o observatie importanta pentru cele doua modele este ca nici unul nu foloseste proprietati ale gradelor nodurilor din retea. Intr-o retea empirica, gradele nodurilor nu au o distributie apropiata de medie, existand multe noduri cu grad mic, dar si noduri cu grad considerabil mai mare decat medie (intr-o retea sociala, aceste noduri ar fi persoanele celebre din diferite domenii: actori, sportivi, politicieni, etc.). Aceasta problema este adresata in modelul de generare "Scale-Free" utilizat mai jos.
+Din rezultatele grafice, se poate observa ca nici acest model nu este unul multumitor. In plus, o observatie importanta pentru cele doua modele este ca nici unul nu foloseste proprietati ale gradelor nodurilor din retea. Intr-o retea empirica, gradele nodurilor nu au o distributie apropiata de medie, existand multe noduri cu grad mic, dar si noduri cu grad considerabil mai mare decat medie (intr-o retea sociala, aceste noduri ar fi persoanele celebre din diferite domenii: actori, sportivi, politicieni etc.). Aceasta problema este adresata in modelul de generare "Scale-Free" utilizat mai jos.
 ```{r}
 ## Generate a similar network using Scale-Free Model
 b_net <- barabasi.game(no_nodes, directed=FALSE)

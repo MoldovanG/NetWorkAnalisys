@@ -498,8 +498,15 @@ gplot(netsym,gmode="graph",vertex.col="red",edge.col=brnet+2,jitter=FALSE,
 ```
 
 
-# Chapter 8
-```{r}
+# Capitolul 8: Subgrupuri - Introducere
+
+&nbsp;
+
+**Descoperirea subgrupurilor dintr-o retea**
+
+Retele sociale: tendinta de separare a actantilor in subgrupuri puternic interconectate, ale caror legaturi cu membrii din afara subgrupului sunt in numar relativ mic
+
+```{r echo=FALSE, include=FALSE}
 ## Setup
 ### Import igraph for this part of the project
 library(igraph)
@@ -509,22 +516,56 @@ inetsym <- as.undirected(asIgraph(netsym))
 V(inetsym)$name <- netsym %v% "abrev_name"
 V(inetsym)$fullname <- network.vertex.names(netsym)
 V(inetsym)$role <- rolecat
+```
 
-## Cliques
-### Determine the cliques from the network as well as the biggest clique.
+&nbsp;
+
+**Subgrupuri:** submultimile de noduri ce contin cat mai multe conexiuni directe
+
+Componenta ce ofera informatii despre puterea unei legaturi (spre exemplu, intr-o retea de socializare - frecventa de interactiune: zilnic, saptamanal, lunar, ocazional) poate fi integrata in determinarea subgrupurilor
+
+  * Legaturile mai slabe sunt folosite mai probabil pentru a conecta doua subgrupuri diferite decat pentru a conecta doua noduri din cadrul aceluiasi subgrup
+
+&nbsp;
+
+
+# Capitolul 8: Subgrupuri - Clique
+**Clique:** Sunt considerate subgrupuri doar submultimile care au conexiune intre oricare doua noduri (extragerea de subgrafuri complete)
+
+Observatii:
+
+* putem sa consideram o dimensiune minima pentru un subgrup, de regula 3 noduri; 
+
+* "clique maximal" (care nu mai poate fi extins prin adaugarea altor noduri).
+
+```{r results="hide"}
+# Determine the maximum size of a clique
 clique.number(inetsym)
+# Determine all the cliques
 cliques(inetsym, min=3)
+# Determine the maximal cliques
 maximal.cliques(inetsym, min=3)
+# Determine the cliques with maximum size
 largest.cliques(inetsym)
+```
+&nbsp;
 
-## k-Cores
+# Capitolul 8: Subgrupuri - k-Core
+Constrangerea de a avea legaturi intre oricare doua noduri dintr-un subgrup este adesea prea puternica. Astfel, a fost introdusa notiunea de "**k-Core**": daca extragem un k-Core, toate nodurile trebuie sa aiba gradul cel putin egal cu k.
+
+```{r include=FALSE}
+## For each k, determine the number of nodes that are part of a k-Core (but not a (k+1)-Core, k is maximum)
 coreness <- graph.coreness(inetsym)
 table(coreness)
+
+# Plot the network, with each node having its maximum k on it
 maxCoreness <- max(coreness)
-maxCoreness
 colors <- rainbow(maxCoreness)
 plot(inetsym,vertex.label=coreness,vertex.color=colors[coreness],layout=layout_with_fr)
+```
 
+```{r echo=FALSE, include=TRUE}
+# Gradually remove the nodes that are only part of 1-Cores and 2-Cores
 i1_3 <- inetsym
 i2_3 <- induced.subgraph(inetsym, vids=which(coreness > 1))
 i3_3 <- induced.subgraph(inetsym, vids=which(coreness > 2))
@@ -533,108 +574,154 @@ op <- par(mfrow=c(1,3),mar = c(3,0,2,0))
 plot(i1_3,layout=lay,vertex.label=coreness,vertex.color=colors[coreness],main="All k-cores")
 plot(i2_3,layout=lay[which(coreness > 1),],vertex.label=coreness[which(coreness > 1)],vertex.color=colors[coreness[which(coreness > 1)]],main="k-cores 2-3")
 plot(i3_3,layout=lay[which(coreness > 2),],vertex.label=coreness[which(coreness > 2)],vertex.color=colors[coreness[which(coreness > 2)]],main="k-cores 3")
-par(op)
+```
+&nbsp;
 
-## Modularity is a measure that describes how good is a network clusterization
-colors <- brewer.pal(5,"Dark2")
-roles <- c("C","CR","CT","A","D")
-V(inetsym)[V(inetsym)$role == "C"]$color <- colors[1]
-V(inetsym)[V(inetsym)$role == "CR"]$color <- colors[2]
-V(inetsym)[V(inetsym)$role == "CT"]$color <- colors[3]
-V(inetsym)[V(inetsym)$role == "A"]$color <- colors[4]
-V(inetsym)[V(inetsym)$role == "D"]$color <- colors[5]
+# Capitolul 8: Subgrupuri - Modularitate
+**Modularitate:**
 
-V(inetsym)[V(inetsym)$role == "C"]$group <- 1
-V(inetsym)[V(inetsym)$role == "CR"]$group <- 2
-V(inetsym)[V(inetsym)$role == "CT"]$group <- 3
-V(inetsym)[V(inetsym)$role == "A"]$group <- 4
-V(inetsym)[V(inetsym)$role == "D"]$group <- 5
+* Pentru a compara diferite moduri de a imparti o retea in subgrupuri
 
-op <- par(mfrow=c(1,1))
-plot(inetsym,vertex.color=V(inetsym)$color,vertex.size=10)
+* Statistica ce poate fi calculata efectuand scaderea dintre probabilitatea ca alegand o legatura din retea aceasta sa fie intre noduri din acelasi subgrup si aceeasi probabilitate calculata intr-o retea formata din aceleasi noduri, dar in care muchiile sunt distribuite in mod aleator (numarul de muchii din reteaua initiala este conservat). 
 
-## Modularity based on the role of each person
+&nbsp;
+
+Vom incerca sa realizam o impartire in subgrupuri a retelei de traficanti folosind drept criteriu rolul fiecarui actant. 
+
+*Se poate observa la sfarsit ca acest criteriu nu este cel mai potrivit tinand cont de faptul ca modularitatea obtinuta este negativa.*
+
+```{r}
+## Computing the modularity of the clusterization method
+V(inetsym)$group <- strtoi(V(inetsym)$role)
 modularity(inetsym, V(inetsym)$group)
-## The result is smaller than 0, which means a bad clusterization result using this method
+## Visualizing the network by emphasizing the role of each node
+colors <- brewer.pal(5,"Dark2")
+V(inetsym)$color <- colors[strtoi(V(inetsym)$role)]
+op <- par(mfrow=c(1,1))
+plot(inetsym,vertex.color=V(inetsym)$color,vertex.size=20)
+```
 
-## Community detection algorithms
+# Capitolul 8: Subgrupuri - Algoritmi "Community Detection"
+**"Community Detection":** diversi algoritmi care sa exploreze tiparele legaturilor catre exteriorul unui subgrup.
+
+```{r echo=FALSE, include=FALSE}
+## Applying multiple community detection algorithms
 cw <- cluster_walktrap(inetsym)
-modularity(cw)
-membership(cw)
+modularity(cw); membership(cw)
 ceb <- cluster_edge_betweenness(inetsym)
-modularity(ceb)
-membership(ceb)
+modularity(ceb); membership(ceb)
 cs <- cluster_spinglass(inetsym)
-modularity(cs)
-membership(cs)
+modularity(cs); membership(cs)
 cfg <- cluster_fast_greedy(inetsym)
-modularity(cfg)
-membership(cfg)
+modularity(cfg); membership(cfg)
 clp <- cluster_label_prop(inetsym)
-modularity(clp)
-membership(clp)
+modularity(clp); membership(clp)
 cle <- cluster_leading_eigen(inetsym)
-modularity(cle)
-membership(cle)
+modularity(cle); membership(cle)
 cl <- cluster_louvain(inetsym)
-modularity(cl)
-membership(cl)
+modularity(cl); membership(cl)
+
+# Comparing the community detection algorithms
 table(V(inetsym)$role,membership(cw))
 compare(as.numeric(factor(V(inetsym)$role)),cw,method="adjusted.rand")
 compare(cw,ceb,method="adjusted.rand")
 compare(cw,cs,method="adjusted.rand")
 compare(cw,cfg,method="adjusted.rand")
-op <- par(mfrow=c(3,2),mar=c(3,0,2,0))
-plot(ceb, inetsym,vertex.label=V(inetsym)$name,main="Edge Betweenness")
-plot(cfg, inetsym,vertex.label=V(inetsym)$name,main="Fastgreedy")
-plot(clp, inetsym,vertex.label=V(inetsym)$name,main="Label Propagation")
-plot(cle, inetsym,vertex.label=V(inetsym)$name,main="Leading Eigenvector")
-plot(cs, inetsym,vertex.label=V(inetsym)$name,main="Spinglass")
-plot(cw, inetsym,vertex.label=V(inetsym)$name,main="Walktrap")
-par(op)
 ```
 
-# Chapter 10
+```{r echo=FALSE, include=TRUE}
+# Visualizing the splitting made by each method
+op <- par(mfrow=c(3,2),mar=c(3,0,2,0))
+plot(ceb, inetsym,vertex.label=NA,main="Edge Betweenness")
+plot(cfg, inetsym,vertex.label=NA,main="Fastgreedy")
+plot(clp, inetsym,vertex.label=NA,main="Label Propagation")
+plot(cle, inetsym,vertex.label=NA,main="Leading Eigenvector")
+plot(cs, inetsym,vertex.label=NA,main="Spinglass")
+plot(cw, inetsym,vertex.label=NA,main="Walktrap")
+```
+
+# Capitolul 10: Modele de retele aleatoare - "Random graph model"
+
+Vom incerca in continuare sa utilizam diferite modele pentru a genera o retea care sa aiba caracteristici similare cu reteaua initiala.
+
+&nbsp;
+
+**"Random graph model":** reteaua este generata pornind de la un numar specificat de noduri si adaugand, in mod aleator, un numar specificat de muchii. 
+
+* Alternativ, se poate specifica in locul numarului de muchii, o probabilitate de a avea muchie intre doua noduri ale retelei.
 
 ```{r}
-## Trying to generate a similar network using Erdos-Renyi method
+## Generate a similar network using Erdos-Renyi method (by specify the number of edges)
 no_nodes <- length(V(inetsym))
 no_edges <- length(E(inetsym))
-generated_network <- erdos.renyi.game(n=no_nodes,no_edges,type='gnm')
-op <- par(mfrow=c(1,2))
-plot(inetsym,vertex.label=NA,vertex.size=5)
-plot(generated_network, vertex.label=NA, vertex.size=5)
-par(op)
+er_net1 <- erdos.renyi.game(n=no_nodes,no_edges,type='gnm')
 
-## Trying to generate a similar network using Small-World Model
-avg_degree <- no_edges/no_nodes*2
-g1 <- watts.strogatz.game(dim=1, size=no_nodes, nei=avg_degree/2, p=.05)
-g2 <- watts.strogatz.game(dim=1, size=no_nodes, nei=avg_degree/2, p=.15)
-g3 <- watts.strogatz.game(dim=1, size=no_nodes, nei=avg_degree/2, p=.30)
+## Generate a similar network using Erdos-Renyi method (by specify the probability of having an edge between two nodes)
+edge_prob <- no_edges / ((no_nodes-1)*no_nodes)
+er_net2 <- erdos.renyi.game(n=no_nodes, edge_prob,type='gnp')
+
+op <- par(mfrow=c(1,3))
+plot(inetsym,vertex.label=NA,vertex.size=10)
+plot(er_net1, vertex.label=NA, vertex.size=10)
+plot(er_net2, vertex.label=NA, vertex.size=10)
+```
+
+
+* Din cauza generalitatii modelului random graph, nu se pot genera retele care sa aiba anumite particularitati dorite (care sunt observate la o retea obtinuta empiric):
+  * dimensiunile retelelor sociale pot fi de ordinul milioanelor de noduri, insa diametrul acestora este considerabil mai mic
+
+&nbsp;
+
+# Capitolul 10: Modele de retele aleatoare - Modelul "Small-World"
+**Modelul "Small-World":** porneste de la o configuratie prestabilita a muchiilor retelei, urmata de o modificarea a acestora cu o anumita probabilitate.
+
+```{r}
+## Generating a similar network using Small-World Model
+avg_degree <- 2*no_edges/no_nodes
+ws_net1 <- watts.strogatz.game(dim=1, size=no_nodes, nei=avg_degree/2, p=.25)
+ws_net2 <- watts.strogatz.game(dim=1, size=no_nodes, nei=avg_degree/2, p=.5)
+ws_net3 <- watts.strogatz.game(dim=1, size=no_nodes, nei=avg_degree/2, p=.75)
+
+## Visualizing the results
 op <- par(mfrow=c(2,2))
-plot(inetsym,vertex.label=NA,vertex.size=5)
-plot(g1, vertex.label=NA, vertex.size=5)
-plot(g2, vertex.label=NA, vertex.size=5)
-plot(g3, vertex.label=NA, vertex.size=5)
-par(op)
+plot(inetsym,vertex.label=NA,vertex.size=10)
+plot(ws_net1, vertex.label=NA, vertex.size=10)
+plot(ws_net2, vertex.label=NA, vertex.size=10)
+plot(ws_net3, vertex.label=NA, vertex.size=10)
+```
 
-## Trying to generate a similar network using Scale-Free Model
-barabasi_network <- barabasi.game(no_nodes, directed=FALSE)
+Modelele "random graph" si "small-world" nu folosesc proprietati ale gradelor nodurilor din retea. 
+
+&nbsp;
+
+# Capitolul 10: Modele de retele aleatoare - Modelul "Scale-Free"
+**Modelul "Scale-Free":** intr-o retea empirica, gradele nodurilor nu au o distributie apropiata de medie, existand multe noduri cu grad mic, dar si noduri cu grad considerabil mai mare decat medie (intr-o retea sociala, aceste noduri ar fi persoanele celebre din diferite domenii: actori, sportivi, politicieni, etc.).
+
+```{r}
+## Generate a similar network using Scale-Free Model
+b_net <- barabasi.game(no_nodes, directed=FALSE)
+
+## Visualize the result
 op <- par(mfrow=c(1,2))
-plot(inetsym,vertex.label=NA, vertex.size=5)
-plot(barabasi_network,vertex.label=NA, vertex.size=5)
-par(op)
+plot(inetsym,vertex.label=NA, vertex.size=10)
+plot(b_net,vertex.label=NA, vertex.size=10)
+```
 
+&nbsp;
 
+# Capitolul 10: Modele de retele aleatoare - Comparatie cu modelul empiric
+***Statistici comparative ale retelelor generate si rezultatele observate in cadrul retelei empirice:***
+
+```{r echo=FALSE, include=TRUE}
 ## Comparing random models with the empirical network
-list_network <- c(generated_network, g2, barabasi_network, inetsym)
+list_network <- c(er_net1, ws_net2, b_net, inetsym)
 comparison_table <- data.frame(
   Name = c("Erdos-Renyi", "Small world", "Scale-free model", "Empiric network"),
-  Size = c(length(V(generated_network)), length(V(g2)), length(V(barabasi_network)), length(V(inetsym))),
-  Density = c(gden(asNetwork(generated_network)),gden(asNetwork(g2)),gden(asNetwork(barabasi_network)),gden(asNetwork(inetsym))),
-  Avg_Degree = c(length(E(generated_network))/length(V(generated_network)),length(E(g2))/length(V(g2)),length(E(barabasi_network))/length(V(barabasi_network)),length(E(inetsym))/length(V(inetsym))),
-  Transitivity = c(transitivity(generated_network), transitivity(g2), transitivity(barabasi_network), transitivity(inetsym)),
-  Isolates = c(sum(degree(generated_network)==0),sum(degree(g2)==0),sum(degree(barabasi_network)==0),sum(degree(inetsym)==0))
+  Size = c(length(V(er_net1)), length(V(ws_net2)), length(V(b_net)), length(V(inetsym))),
+  Density = c(gden(asNetwork(er_net1)),gden(asNetwork(ws_net2)),gden(asNetwork(b_net)),gden(asNetwork(inetsym))),
+  Avg_Degree = c(length(E(er_net1))/length(V(er_net1)),length(E(ws_net2))/length(V(ws_net2)),length(E(b_net))/length(V(b_net)),length(E(inetsym))/length(V(inetsym))),
+  Transitivity = c(transitivity(er_net1), transitivity(ws_net2), transitivity(b_net), transitivity(inetsym)),
+  Isolates = c(sum(degree(er_net1)==0),sum(degree(ws_net2)==0),sum(degree(b_net)==0),sum(degree(inetsym)==0))
 )
 comparison_table
 ```

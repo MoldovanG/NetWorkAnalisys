@@ -196,6 +196,7 @@ print(gtrans(netsym, mode="graph"))
 ```
 
 # Capitolul 3: Managementul datelor atribuite unei retele
+
 Folosind atributele definite în momentul creării, putem filtra reţeua astfel încat putem evidenţia importanţa unui anume rol. Spre exemplu, dacă am păstra în reţea doar Comercianţii, putem observa că aceştia sunt în mare partea izolaţi, distrugând aspectul de reţea compactă. Acest lucru evidenţiază rolul contrabandiştilor în reţea, aceştia asigurând practic conexitatea reţelei.    
 
 ```{r, results='hide'}

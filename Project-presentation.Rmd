@@ -8,15 +8,17 @@ output: slidy_presentation
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(echo = TRUE)
 ```
-##Introducere
-#Reprezentarea datelor sub forma de retea e o abordare diferita fata de modul clasic de reprezentare, cel tabelar. Acest format poate evidentia noi caracteristici ale datelor si imbunatesteste vizualizarea acestora  intr-un mod semnificativ.
-#Pentru a realiza o analiza originala, setul de date folosit reprezinta structura unei retele de trafic cu tigari de contrabanda din Romania, datele fiind extrase dintr-un dosar penal. Astfel, utilizand metode de graph mining vom realiza o analiza asupra structurii retelei, dar si asupra rolurilor individuale ale membrilor. 
+# Introducere
 
-## Capitolul 1 - Modelarea datelor in R
-#Datele au fost modelate folosind un obiect de tip reţea din librăria statnet. Legăturile dintre noduri au fost introduse folosind o lista de muchii, iar nodurile au următoarele atribute : nume, nume abreviat si rol. 
+Reprezentarea datelor sub forma de retea e o abordare diferita fata de modul clasic de reprezentare, cel tabelar. Acest format poate evidentia noi caracteristici ale datelor si imbunatesteste vizualizarea acestora  intr-un mod semnificativ.
 
-```{r}
-knitr::opts_chunk$set(echo = FALSE)
+Pentru a realiza o analiza originala, setul de date folosit reprezinta structura unei retele de trafic cu tigari de contrabanda din Romania, datele fiind extrase dintr-un dosar penal. Astfel, utilizand metode de graph mining vom realiza o analiza asupra structurii retelei, dar si asupra rolurilor individuale ale membrilor. 
+
+# Capitolul 1 - Modelarea datelor in R
+
+Datele au fost modelate folosind un obiect de tip reţea din librăria statnet. Legăturile dintre noduri au fost introduse folosind o lista de muchii, iar nodurile au următoarele atribute : nume, nume abreviat si rol. 
+
+```{r message=FALSE, warning=FALSE}
 library(statnet)
 library(RColorBrewer)
 library(network)
@@ -142,7 +144,6 @@ rolecat <- as.factor(get.vertex.attribute(netsym,"role"))
 ```
 
 ```{r}
-knitr::opts_chunk$set(echo = TRUE)
 plot(netsym,
      main = "Infractional network",
      usearrows=FALSE, 
@@ -155,9 +156,10 @@ plot(netsym,
 ```
 
 
-## Capitolul 2 - Analiza primara a retelei
+# Capitolul 2 - Analiza primara a retelei
 
-#O prima analiza asupra retelei este realizarea rezumatului in 5 puncte. Functiile prezente in libraria statnet faciliteaza realizarea acesteia. Analizand aceste valori, putem avea o prima impresie despre structura retelei si despre modul de organizarea a acesteia.
+O prima analiza asupra retelei este realizarea rezumatului in 5 puncte. Functiile prezente in libraria statnet faciliteaza realizarea acesteia. Analizand aceste valori, putem avea o prima impresie despre structura retelei si despre modul de organizarea a acesteia.
+
 ```{r}
 print("BASIC CHARACTERISTICS")
 
@@ -180,8 +182,9 @@ print("Transitivity:")
 print(gtrans(netsym, mode="graph"))
 ```
 
-## 3. Capitolul 3 - Managementul datelor atribuite unei retele
-# Folosind atributele definite în momentul creării, putem filtra reţeua astfel încat putem evidenţia importanţa unui anume rol. Spre exemplu, dacă am păstra în reţea doar Comercianţii, putem observa că aceştia sunt în mare partea izolaţi, distrugând aspectul de reţea compactă. Acest lucru evidenţiază rolul contrabandiştilor în reţea, aceştia asigurând practic conexitatea reţelei.    
+# 3. Capitolul 3 - Managementul datelor atribuite unei retele
+
+Folosind atributele definite în momentul creării, putem filtra reţeua astfel încat putem evidenţia importanţa unui anume rol. Spre exemplu, dacă am păstra în reţea doar Comercianţii, putem observa că aceştia sunt în mare partea izolaţi, distrugând aspectul de reţea compactă. Acest lucru evidenţiază rolul contrabandiştilor în reţea, aceştia asigurând practic conexitatea reţelei.    
 
 ```{r, results='hide'}
 

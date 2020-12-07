@@ -172,27 +172,33 @@ plot(netsym,
 
 # Capitolul 2: Analiza primara a retelei
 
-O prima analiza asupra retelei este realizarea rezumatului in 5 puncte. Functiile prezente in libraria statnet faciliteaza realizarea acesteia. Analizand aceste valori, putem avea o prima impresie despre structura retelei si despre modul de organizarea a acesteia.
+O prima analiza asupra retelei este realizarea rezumatului in 5 puncte. Functiile prezente in libraria statnet faciliteaza realizarea acesteia. Analizand aceste valori, putem avea o prima impresie despre structura retelei si despre modul de organizarea a acesteia. O descriere sumara a celor cinci valori poate fi data astfel:
+
+* Size : Numarul de noduri din cadrul retelei
+* Density: Raportul dintre numarul de legaturi din retea si numarul de legaturi in cazul unei retele complet conectate
+* Components: Numarul de componente conexe ale retelei
+* Diameter: Cea mai mare distanta calculata pe cel mai scurt drum dintre oricare doua noduri ale retelei
+* Transitivity: Raportul dintre numarul de triunghiuri inchise (trei noduri interconectate fiecare cu fiecare) si numarul de triunghiuri deschise si inchise (subgraf conex format din trei noduri)
 ```{r}
-print("BASIC CHARACTERISTICS")
+## "Five-Number Summary"
 
 summary(netsym, print.adj = FALSE)
 
-print("Size:")
-print(network.size(netsym))
+# Size
+network.size(netsym)
 
-print("Density:")
-print(gden(netsym))
+# Density
+gden(netsym)
 
-print("Components:")
-print(components(netsym))
+# Components
+components(netsym)
 
-print("Diameter:")
+# Diameter
 gd <- geodist(netsym)
-print(max(gd$gdist))
+max(gd$gdist)
 
-print("Transitivity:")
-print(gtrans(netsym, mode="graph"))
+# Transitivity
+gtrans(netsym, mode="graph")
 ```
 
 # Capitolul 3: Managementul datelor atribuite unei retele
@@ -807,7 +813,7 @@ In analiza unei retele moderne sociale se desting urmatoarele caracterisici:
 
 Analizele prezentate pana in acest moment au pus accent pe primele trei concepte, iar in cele ce urmeaza il vom aborda pe cel din urma. Mai precis, vom incerca in continuare sa utilizam diferite modele pentru a genera o retea care sa aiba caracteristici similare cu reteaua initiala (cea a traficantilor).
 
-O prima abordare luata in considerare, este propusa de Paul Erdos si Alfred Renyi. In aceasta metoda, reteaua este generata pornind de la un specificat de noduri si adaugand, in mod aleator, un numar specificat de muchii. Datorita acestei constructii, acest model este referit si sub denumirea de "random graph model". Alternativ, pentru constructia unui astfel de model se poate specifica in locul numarului de muchii, o probabilitate de a avea muchie intre doua noduri ale retelei. In continuare, este prezentat codul pentru generarea retelei utilizand cele doua metode si vizualizarea grafica a rezultatelor comparativ cu reteaua initiala.
+O prima abordare luata in considerare, este propusa de Paul Erdos si Alfred Renyi. In aceasta metoda, reteaua este generata pornind de la un numar specificat de noduri si adaugand, in mod aleator, un numar specificat de muchii. Datorita acestei constructii, acest model este referit si sub denumirea de "random graph model". Alternativ, pentru constructia unui astfel de model se poate specifica in locul numarului de muchii, o probabilitate de a avea muchie intre doua noduri ale retelei. In continuare, este prezentat codul pentru generarea retelei utilizand cele doua metode si vizualizarea grafica a rezultatelor comparativ cu reteaua initiala.
 ```{r}
 ## Generate a similar network using Erdos-Renyi method (by specify the number of edges)
 no_nodes <- length(V(inetsym))
@@ -824,7 +830,7 @@ plot(er_net1, vertex.label=NA, vertex.size=10)
 plot(er_net2, vertex.label=NA, vertex.size=10)
 ```
 
-Modelul prezentat anterior este unul simplu de inteles, insa din cauza generalitatii sale, nu se pot genera retele care sa aiba anumite particularitati dorite (care sunt observate la o retea obtinuta empiric). Un astfel de exemplu, este faptul ca desi dimensiunile retelelor sociale pot fi de ordinul milionelor de noduri, diametrul acestora este considerabil mai mic, fapt ce nu este foarte usor de replicat in modelul anterior. De aceea modelul "Small-World" doreste sa imbunatateasca acest lucru pornind de la o configuratie prestabilita a muchiilor retelei, urmata de o modificarea a acestora cu o anumita probabilitate. Se poate observa ca folosind probabilitatea de modificare a muchiilor cu valoare 1, configuratia initiala nu va mai conta, iar modelul va fi similar cu cel prezentat anterior. Inainte de a prezenta codul pentru generarea acestui model, vom explica cum arata configuratia initiala a retelei. Nodurile sunt asezate in cerc, iar fiecare nod este legat de k dintre cei mai apropiati vecini ai sai (atat cei din dreapta, cat si cei din stanga). In exemplu urmator vom determina acest k, tinand cont de gradul mediu al unui nod, iar pentru probabilitatea de modificarea a unei muchii vom utiliza trei valori diferite ale parametrului (0.25, 0.5, 0.75). Analizand grafic cat de similare sunt aceste retele comparativ cu cea initiala.
+Modelul prezentat anterior este unul simplu de inteles, insa din cauza generalitatii sale, nu se pot genera retele care sa aiba anumite particularitati dorite (care sunt observate la o retea obtinuta empiric). Un astfel de exemplu, este faptul ca desi dimensiunile retelelor sociale pot fi de ordinul milioanelor de noduri, diametrul acestora este considerabil mai mic, fapt ce nu este foarte usor de replicat in modelul anterior. De aceea modelul "Small-World" doreste sa imbunatateasca acest lucru pornind de la o configuratie prestabilita a muchiilor retelei, urmata de o modificarea a acestora cu o anumita probabilitate. Se poate observa ca folosind probabilitatea de modificare a muchiilor cu valoare 1, configuratia initiala nu va mai conta, iar modelul va fi similar cu cel prezentat anterior. Inainte de a prezenta codul pentru generarea acestui model, vom explica cum arata configuratia initiala a retelei. Nodurile sunt asezate in cerc, iar fiecare nod este legat de k dintre cei mai apropiati vecini ai sai (atat cei din dreapta, cat si cei din stanga). In exemplu urmator vom determina acest k, tinand cont de gradul mediu al unui nod, iar pentru probabilitatea de modificarea a unei muchii vom utiliza trei valori diferite ale parametrului (0.25, 0.5, 0.75). Analizand grafic cat de similare sunt aceste retele comparativ cu cea initiala.
 ```{r}
 ## Generating a similar network using Small-World Model
 avg_degree <- 2*no_edges/no_nodes

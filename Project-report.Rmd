@@ -386,49 +386,22 @@ detach("package:circlize", unload=TRUE)
 ```
 
 # Capitolul 7: Importanta actantilor
-```{r}
+Un rol cheie pentru o buna intelegere a structurii unei retele este analiza nodurilor si descoperirea celor mai importante si celor critice. Analize similare se pot realiza si pentru relatiile dintre noduri.
+
+```{r include=FALSE}
 detach("package:networkD3", unload=TRUE)
 detach("package:igraph", unload=TRUE)
-print("CENTRALITY DEGREES")
-print(degree(netsym, gmode="graph"))
-print(closeness(netsym, gmode="graph"))
-print(betweenness(netsym, gmode="graph"))
-
-#Cutpoints
-cpnet <- cutpoints(netsym,mode="graph",
-                   return.indicator=TRUE)
-gplot(netsym,gmode="graph",vertex.col=cpnet+2,coord=MCoords,
-      jitter=FALSE,displaylabels=TRUE)
-
-#Bridges
-bridges <- function(dat,mode="graph",
-                    connected=c("strong", "weak")) {
-   e_cnt <- network.edgecount(dat)
-   if (mode == "graph") {
-      cmp_cnt <- components(dat)
-      b_vec <- rep(FALSE,e_cnt)
-      for(i in 1:e_cnt){
-         dat2 <- dat
-         delete.edges(dat2,i)
-         b_vec[i] <- (components(dat2) != cmp_cnt)
-      }
-   }
-   else {
-      cmp_cnt <- components(dat,connected=connected)
-      b_vec <- rep(FALSE,e_cnt)
-      for(i in 1:e_cnt){
-         dat2 <- dat
-         delete.edges(dat2,i)
-         b_vec[i] <- (components(dat2) != cmp_cnt)
-      }
-   }
-   return(b_vec)
-}
-bridges(netsym)
-
-
 colors <- c("blue", "red")
+```
 
+Vom incepe analiza cu determinarea nodurilor centrale dintr-o retea. Cele mai folosite masuri pentru aceasta sunt urmatoarele:
+
+* Degree: Numarul de legaturi ale unui nod
+* Closeness: Inversul sumei distantelor de la nodul dat la fiecare din celelalte noduri
+* Betweenness: Suma probabilitatilor ca nodul curent sa se afle pe cel mai scurt drum dintre oricare perechi de noduri
+
+Mai jos, sunt expuse metodele pentru calculul centralitatii folosind aceste masuratori.
+```{r}
 # Determining the centre nodes using the degree
 deg <- degree(netsym, gmode="graph")
 plot(netsym,
@@ -455,7 +428,10 @@ plot(netsym,
      label = netsym %v% "abrev_name",
      displaylabels=T,
      vertex.cex = sqrt(bet+1))
+```
 
+Cu exceptia acestora, exista si alte masuri ale centralitati, insa rezultatele multora dintre acestea sunt corelate cu cele ale metodele prezentate anterior. Acest fapt este evidentiat si in calculele prezentate anterior si poate fi explicat prin faptul ca aceste masuratori, pornesc de la aceste metode de baza si aduc imbunatatiri.
+```{r}
 # Computing the level of correlation between multiple centrality measures
 df.prom <- data.frame(
         deg = degree(netsym),
@@ -466,10 +442,12 @@ df.prom <- data.frame(
         flb = flowbet(netsym)
 )
 cor(df.prom)
+```
 
+Pentru a putea determina daca un nod este central sau nu, se pot folosi rezultatele mai multor masuratori. In acest caz, concluzia ca un nod este central este data doar daca toate (sau majoritatea) metodelor ofera acest rezultat. Prin aceasta metoda, se obtine o mai buna acuratete in determinarea nodurilor centrale. Mai jos se poate observa o analiza pe setul de date a centralitatii pentru fiecare nod si fiecare masuratoarea prezentata.
+```{r}
 # Tabular visualization for multiple centrality measures
-# Defining a data frame in which is computed the centrality for all nodes using
-# multiple methods
+# Defining a data frame in which is computed the centrality for all nodes using multiple methods
 df.prom2 <- data.frame(
         name = network.vertex.names(netsym),
         degree = degree(netsym, gmode="graph"),
@@ -486,13 +464,20 @@ df.promsort <- rbind(df.promsort,data.frame(
         betweenness = cb
 ))
 df.promsort
+```
 
+
+Alaturi de nodurile centrale, nodurile critice sunt o componenta de baza in structura unei retele. Prin nod critic se intelege un nod care daca este eliminat va afecta conectivitatea dintre alte perechi de noduri din retea. Prin codul urmator se arata cum pot fi determinate nodurile critice din cadrul retelei de traficanti.
+```{r}
 # Cutpoints are nodes that if removed will affect the conectivity of the network
 # In the graphic below, it is displayed with green the cutpoint nodes.
 cpnet <- cutpoints(netsym,mode="graph",return.indicator=TRUE)
 gplot(netsym,gmode="graph",vertex.cex=cpnet+2,vertex.col=cpnet+2,jitter=FALSE,
       displaylabels=TRUE,label=netsym %v% "abrev_name")
+```
 
+Similar cu nodurile critice, se poate defini si notiunea de muchie critica. Aceasta reprezinta o legatura care daca este eliminata, va strica conectivitatea retelei. Codul urmator ilustreaza cum pot fi determinate aceste muchii critice in reteaua prezentata.
+```{r}
 # Bridges are edges that if removed will affect the conectivity of the network
 # In the graphic below it is displayed with green the edges that are bridges.
 bridges <- function(dat,mode="graph",connected=c("strong", "weak")) {

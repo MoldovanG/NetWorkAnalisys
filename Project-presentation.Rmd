@@ -22,6 +22,7 @@ Datele au fost modelate folosind un obiect de tip reţea din librăria statnet. 
 library(statnet)
 library(RColorBrewer)
 library(network)
+library(UserNetR)
 ```
 
 ```{r}
@@ -639,6 +640,228 @@ plot(cle, inetsym,vertex.label=NA,main="Leading Eigenvector")
 plot(cs, inetsym,vertex.label=NA,main="Spinglass")
 plot(cw, inetsym,vertex.label=NA,main="Walktrap")
 ```
+
+# Capitolul 9: "Affiliation Networks" - Introducere
+
+*Conceptele din acest capitol nu pot fi ilustrate pe reteaua traficantilor, de aceea exemple prezentate utilizeaza un set de date ilustrat in cartea din bibliografie. Aceste notiuni sunt aplicate pe grafuri in care legaturile dintre actanti nu sunt directe, ci sunt date de faptul ca cele doua persoane sunt parte al aceluiasi grup (de exemplu: clasa, departament, oras).*
+
+**"2-Mode Networks":** 
+
+* nodurile din cadrul lor reprezinta doua clase diferite, fiind realizate legaturi doar intre obiecte de tipuri diferite
+
+```{r echo=FALSE, include=TRUE}
+C1 <- c(1,1,1,0,0,0)
+C2 <- c(0,1,1,1,0,0)
+C3 <- c(0,0,1,1,1,0)
+C4 <- c(0,0,0,0,1,1)
+aff.df <- data.frame(C1,C2,C3,C4)
+row.names(aff.df) <- c("S1","S2","S3","S4","S5","S6")
+aff.df
+```
+
+* graful obtinut este bipartit, dupa cum se poate observa si din graficul urmator
+
+```{r include=FALSE, echo=FALSE}
+library(igraph)
+```
+
+```{r echo=FALSE, include=TRUE}
+## Plotting the affiliation network to illustrate the bipartite property
+bn <- graph.incidence(aff.df)
+plt.x <- c(rep(2,6),rep(4,4))
+plt.y <- c(7:2,6:3)
+lay <- as.matrix(cbind(plt.x,plt.y))
+shapes <- c("circle","square")
+colors <- c("blue","red")
+plot(bn,vertex.color=colors[V(bn)$type+1],vertex.shape=shapes[V(bn)$type+1],
+     vertex.size=10,vertex.label.degree=-pi/2,vertex.label.dist=1.2,
+     vertex.label.cex=0.9,layout=lay)
+```
+
+Similar cu celelalte retele, si "affiliation networks" pot fi create atat pornind de la o matrice de incidenta, cat si de la o lista de muchii.
+
+```{r include=FALSE, echo=FALSE}
+## Creating Affiliation Networks from Incidence Matrices
+bn <- graph.incidence(aff.df)
+bn
+get.incidence(bn)
+V(bn)$type
+V(bn)$name
+```
+```{r include=FALSE, echo=FALSE}
+## Creating Affiliation Networks from Edge Lists
+el.df <- data.frame(rbind(c("S1","C1"),
+                          c("S2","C1"),
+                          c("S2","C2"),
+                          c("S3","C1"),
+                          c("S3","C2"),
+                          c("S3","C3"),
+                          c("S4","C2"),
+                          c("S4","C3"),
+                          c("S5","C3"),
+                          c("S5","C4"),
+                          c("S6","C4")))
+bn2 <- graph.data.frame(el.df,directed=FALSE)
+V(bn2)$type <- V(bn2)$name %in% el.df[,1]
+bn2
+graph.density(bn)==graph.density(bn2)
+```
+
+# Capitolul 9: "Affiliation Networks" - Proiectii
+O analiza interesanta ce poate fi realizata pe un "affiliation network", este un studiu pe componente ce poate fi realizat cu ajutorul proiectiilor. O proiectie permite analiza doar unuia dintre cele doua tipuri de noduri prezente intr-o retea "2-Mode". Legaturile dintre noduri in cadrul unei proiectii sunt date de legaturile indirecte din reteaua initiala (daca doi studenti stuadiaza in aceeasi clasa, atunci intre acestia va exista o legatura directa in proiectie). In cele ce urmeaza vom ilustra proiectiile pe reteaua de studenti si clase.
+
+```{r results="hide"}
+## Making the projections on both components
+bn.pr <- bipartite.projection(bn)
+bn.student <- bn.pr$proj1
+bn.class <- bn.pr$proj2
+get.adjacency(bn.student,sparse=FALSE,attr="weight")
+get.adjacency(bn.class,sparse=FALSE,attr="weight")
+
+## Plotting the projections
+shapes <- c("circle","square")
+colors <- c("blue","red")
+op <- par(mfrow=c(1,2))
+plot(bn.student,vertex.color="blue",vertex.shape="circle",main="Students",
+     edge.width=E(bn.student)$weight*2,vertex.size=15,vertex.label.degree=-pi/2,
+     vertex.label.dist=1.2,vertex.label.cex=1)
+plot(bn.class,vertex.color="red",vertex.shape="square",main="Classes",
+     edge.width=E(bn.student)$weight*2,vertex.size=15,vertex.label.degree=-pi/2,
+     vertex.label.dist=1.2,vertex.label.cex=1)
+```
+
+# Capitolul 9: "Affiliation Networks" - Analiza actori
+In cele ce urmeaza, vom prezenta analiza unui set de date de tipul "2-Mode" ce cuprinde filme din perioada 1999-2014, precum si actorii care au avut cele mai importante roluri in aceste filme.
+
+```{r include = FALSE, echo = FALSE}
+## Importing the data set
+data(hwd)
+h1 <- hwd
+
+## Presenting data from the data set
+h1
+V(h1)$name[1:10]
+V(h1)$type[1:10]
+V(h1)$IMDBrating[1:10]
+V(h1)$name[155:165]
+```
+
+```{r echo = FALSE, include = TRUE, results = "hide"}
+## Plotting a part of the network
+V(h1)$shape <- ifelse(V(h1)$type==TRUE,"square","circle")
+V(h1)$shape[1:10]
+V(h1)$color <- ifelse(V(h1)$type==TRUE,"red","lightblue")
+h2 <- subgraph.edges(h1, E(h1)[inc(V(h1)[name %in% c("The Wolf of Wall Street", 
+                                                     "Gangs of New York",
+                                                     "The Departed")])])
+plot(h2, layout = layout_with_kk)
+```
+
+Mai departe este prezentata o analiza a actorilor, cu accent pe cei care au jucat in cele mai multe filme si cei care au jucat in cele mai apreciate filme.
+
+```{r echo=FALSE, include=FALSE}
+## Basic properties of actor projection
+graph.density(h1)
+table(degree(h1,v=V(h1)[type==FALSE]))
+mean(degree(h1,v=V(h1)[type==FALSE]))
+```
+
+```{r echo=FALSE, include=TRUE}
+V(h1)$deg <- degree(h1)
+
+## Displaying busy actors
+V(h1)[type==FALSE & deg > 4]$name
+busy_actor <- data.frame(cbind(Actor = V(h1)[type==FALSE & deg > 4]$name,
+                               Movies = V(h1)[type==FALSE & deg > 4]$deg))
+busy_actor[order(busy_actor$Movies,decreasing=TRUE),]
+```
+
+```{r echo=FALSE, include=FALSE}
+## Displaying actors from best movies
+for (i in 161:1365) {
+  V(h1)[i]$totrating <- sum(V(h1)[nei(i)]$IMDBrating)
+}
+max(V(h1)$totrating,na.rm=TRUE)
+```
+
+```{r echo=FALSE, include=TRUE}
+pop_actor <- data.frame(
+  cbind(Actor = V(h1)[type==FALSE & totrating > 40]$name,
+        Popularity = V(h1)[type==FALSE & totrating > 40]$totrating))
+pop_actor[order(pop_actor$Popularity,decreasing=TRUE),]
+```
+
+Putem analiza si relatii de dependenta intre datele pe care le extragem. 
+
+* regresie intre numarul de filme in care a jucat un actor si media scorului acestor filme
+* *dupa cum se poate vedea in urma analizei urmatoare, precum si din afisarea grafica a rezultatelor, nu se poate extrage o astfel de legatura*
+
+```{r warning=FALSE, echo=FALSE, include=TRUE, results="hide"}
+for (i in 161:1365) {
+  V(h1)[i]$avgrating <- mean(V(h1)[nei(i)]$IMDBrating)
+}
+num <- V(h1)[type==FALSE]$deg  
+avgpop <- V(h1)[type==FALSE]$avgrating
+summary(lm(avgpop ~ num))
+scatter.smooth(num,avgpop,col="lightblue",ylim=c(2,10),span=.8,
+               xlab="Number of Movies",ylab="Avg. Popularity")
+```
+
+
+# Capitolul 9: "Affiliation Networks" - Analiza filme
+Vom analiza mai multe statistici, pentru ca in final sa vizualizam reteaua formata din filmele care au in comun actori cu macar cinci alte filme, din care se poate observa ca fac parte cu preponderenta serii de filme precum: Star Wars, Harry Potter, The Hobbit etc.
+
+```{r echo=FALSE, include=FALSE}
+## Extract projections for the network
+h1.pr <- bipartite.projection(h1)
+h1.act <- h1.pr$proj1
+h1.mov <- h1.pr$proj2
+h1.act
+h1.mov
+```
+
+***Proiectia filmelor:***
+
+```{r echo=FALSE, include=TRUE}
+## Printing movie projection
+op <- par(mar = rep(0, 4))
+plot(h1.mov,vertex.color="red",vertex.shape="circle",
+     vertex.size=(V(h1.mov)$IMDBrating)-3,vertex.label=NA)
+```
+
+```{r echo=FALSE, include=FALSE}
+## Extracting and plotting the biggest component from movie projection
+graph.density(h1.mov)
+no.clusters(h1.mov)
+clusters(h1.mov)$csize
+table(E(h1.mov)$weight)
+```
+
+***Cea mai mare componenta conexa din proiectia filmelor:***
+
+```{r echo=FALSE, include=TRUE}
+h2.mov <- induced.subgraph(h1.mov, vids=clusters(h1.mov)$membership==1)
+plot(h2.mov,vertex.color="red",edge.width=sqrt(E(h1.mov)$weight),
+     vertex.shape="circle",vertex.size=(V(h2.mov)$IMDBrating)-3,vertex.label=NA)
+```
+
+```{r echo=FALSE, include=FALSE}
+table(graph.coreness(h2.mov))
+
+## Extracting and plotting only the nodes with coreness bigger than 4
+h3.mov <- induced.subgraph(h2.mov,vids=graph.coreness(h2.mov)>4)
+h3.mov
+```
+
+***Filmele care au actori in comun cu macar alte cinci filme:***
+
+```{r echo=FALSE, include=TRUE}
+plot(h3.mov,vertex.color="red",vertex.shape="circle",
+     edge.width=sqrt(E(h1.mov)$weight),vertex.label.cex=0.7,
+     vertex.label.color="darkgreen",vertex.label.dist=0.3,
+     vertex.size=(V(h3.mov)$IMDBrating)-3)
+```
+
 
 # Capitolul 10: Modele de retele aleatoare - "Random graph model"
 

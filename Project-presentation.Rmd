@@ -198,6 +198,7 @@ gplot(comercianti, displaylabels = TRUE, main="Grupuri de comercianti")
 ```
 
 # 4.Basic network plotting and layout
+Exista mai multe moduri de a vizualiza o retea, fiecare din aceste noduri prezentand o perspectiva diferita asupra datelor. Modul de vizualizare ales este important pentru a transmite cat mai multe informatii despre retea in mod vizual.
 
 # Circle
 
@@ -239,6 +240,8 @@ gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
 ```
 
 # 5.Effective network graphic design
+
+Pot fi modificate mai multe aspecte vizuale ale retelei, atat legate de noduri cat si legate de muchii, pentru a prezenta mai bine informatiile in mod vizual.
 ```{r, results='hide', message=FALSE}
 library(network)
 
@@ -286,7 +289,7 @@ gplot(netsym,vertex.cex=0.8,gmode="graph", main="Different edge type",
       edge.lty=line_pal[edge_cat])
 ```
 
-# Infractional network
+# Infractional network with legend
 ```{r}
 my_pal <- brewer.pal(5,"Dark2")
 rolecat <- as.factor(get.vertex.attribute(asIgraph(netsym),"role"))
@@ -313,6 +316,9 @@ detach("package:statnet", unload=TRUE)
 
 
 # 6.Advanced Network Graphics
+
+Exista si moduri mai avansate de a prezenta vizual o retea, folosind biblioteci care pot genera retele mai interactive.
+
 ## Tkplot
 ```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 inetsym <- asIgraph(netsym)
@@ -367,8 +373,8 @@ saveWidget(net, "Net_test3.html")
 ```
 
 
-## Chord diagram
-
+## Heatmap
+Heatmap este o reprezentare speciala a unei retele prin care ne este mai usor sa observam interactiunile intre diverse noduri ale retelei si cat de mult interactioneaza fiecare nod cu celelalte.
 ```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 library(circlize)
 library(statnet)
@@ -379,7 +385,7 @@ detach("package:circlize", unload=TRUE)
 ```
 
 # 7. Actor proeminence
-
+Putem spune ca un nod este un actor proeminent intr-o retea daca prezenta lui are un impact special asupra retelei. Urmeaza sa vedem cateva astfel de exemple.
 # Cutpoints
 ```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 detach("package:networkD3", unload=TRUE)

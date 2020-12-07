@@ -215,60 +215,65 @@ delete.vertices(comercianti, isolates(comercianti))
 gplot(comercianti, displaylabels = TRUE, main="Grupuri de comercianti")
 ```
 
-# Capitolul 4: Bazele plotarii retelelor si ale layout-ului
-## Circle
+# 4.Basic network plotting and layout
+Exista mai multe moduri de a vizualiza o retea, fiecare din aceste noduri prezentand o perspectiva diferita asupra datelor. Modul de vizualizare ales este important pentru a transmite cat mai multe informatii despre retea in mod vizual.
+
+# Circle
+
 ```{r}
 gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
       vertex.cex=1.5,mode='circle',main="circle")
 ```
-## Eigen
+
+# Eigen
 
 ```{r}
 gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
       vertex.cex=1.5,mode='eigen',main="eigen")
 ```
 
-## Random
+# Random
 ```{r}
 gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
       vertex.cex=1.5,mode='random',main="random")
 ```
 
-## Spring
+# Spring
 ```{r}
 gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
       vertex.cex=1.5,mode='spring',main="spring")
 ```
 
-## Fruchterman-Reingold
+# Fruchterman-Reingold
 ```{r}
 gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
       vertex.cex=1.5,mode='fruchtermanreingold',main='fruchtermanreingold')
 ```
 
-## Kamada-Kawai
+# Kamada-Kawai
 ```{r}
 gplot(netsym,gmode="graph",edge.col="grey75",displaylabels=T,
       vertex.cex=1.5,mode='kamadakawai',
       main='kamadakawai')
 ```
 
+# 5.Effective network graphic design
 
-
-# Capitolul 5: Design eficient al graficelor retelelor
-```{r}
+Pot fi modificate mai multe aspecte vizuale ale retelei, atat legate de noduri cat si legate de muchii, pentru a prezenta mai bine informatiile in mod vizual.
+```{r, results='hide', message=FALSE}
 library(network)
 
 library(intergraph)
 library(igraph)
 
 library(networkD3)
+
 plot(netsym,vertex.cex=0.5,main="Too small nodes")
 plot(netsym,vertex.cex=6,main="Too large nodes")
 plot(netsym,vertex.cex=2,main="Just right node size")
 ```
 
-## Different node type
+# Different node type
 ```{r}
 sidenum <- 3:7
 rolecat <- as.factor(get.vertex.attribute(asIgraph(netsym),"role"))
@@ -276,7 +281,7 @@ plot(netsym,usearrows=FALSE,vertex.cex=4, main="Different node type",
      displaylabels=F,vertex.sides=sidenum[rolecat])
 ```
 
-## Edge coloring example
+# Edge coloring example
 ```{r}
 n_edge <- network.edgecount(netsym)
 linecol_pal <- c("blue","red","green")
@@ -285,14 +290,14 @@ plot(netsym,vertex.cex=1.5,vertex.col="grey25", main="Edge coloring example",
      edge.col=linecol_pal[edge_cat],edge.lwd=2)
 ```
 
-## Different edge width
+# Different edge width
 ```{r}
 widths <- c(2,6,10)
 plot(netsym,vertex.cex=1.5,main="Different edge width",
      edge.lwd=1.5*widths)
 ```
 
-## Different edge type
+# Different edge type
 ```{r}
 n_edge <- network.edgecount(netsym)
 edge_cat <- sample(1:3,n_edge,replace=T)
@@ -302,7 +307,7 @@ gplot(netsym,vertex.cex=0.8,gmode="graph", main="Different edge type",
       edge.lty=line_pal[edge_cat])
 ```
 
-## Infractional network
+# Infractional network with legend
 ```{r}
 my_pal <- brewer.pal(5,"Dark2")
 rolecat <- as.factor(get.vertex.attribute(asIgraph(netsym),"role"))
@@ -318,15 +323,22 @@ legend("bottomleft",legend=c("Aducator clienti","Comerciant","Cartita","Contraba
        col=my_pal,pch=19,pt.cex=1.5,bty="n",
        title="Criminal Role")
 
+
+```
+
+```{r, echo=FALSE}
 # necessary, caused conflicts
 detach("package:statnet", unload=TRUE)
 
 ```
 
 
-# Capitolul 6: Grafice avansate pentru retele
+# 6.Advanced Network Graphics
+
+Exista si moduri mai avansate de a prezenta vizual o retea, folosind biblioteci care pot genera retele mai interactive.
+
 ## Tkplot
-```{r}
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 inetsym <- asIgraph(netsym)
 Coord <- tkplot(inetsym, vertex.size=3,
                 vertex.label=V(inetsym)$role,
@@ -354,7 +366,9 @@ net_D3 <- forceNetwork(Links = inetsym_edge, Nodes = inetsym_nodes,
 saveNetwork(net_D3,file = 'Net_test2.html',
             selfcontained=TRUE)
 
+```
 
+```{r}
 #Visnetwork
 library(visNetwork)
 inetsym_edge <- get.edgelist(inetsym)
@@ -362,6 +376,9 @@ inetsym_edge <- data.frame(from = inetsym_edge[,1],
                          to = inetsym_edge[,2])
 inetsym_nodes <- data.frame(id = as.numeric(V(inetsym)))
 visNetwork(inetsym_nodes, inetsym_edge, width = "100%")
+```
+
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 net <- visNetwork(inetsym_nodes, inetsym_edge,
                   width = "100%",legend=TRUE)
 net <- visOptions(net,highlightNearest = TRUE)
@@ -374,9 +391,9 @@ saveWidget(net, "Net_test3.html")
 ```
 
 
-## Chord diagram
-
-```{r}
+## Heatmap
+Heatmap este o reprezentare speciala a unei retele prin care ne este mai usor sa observam interactiunile intre diverse noduri ale retelei si cat de mult interactioneaza fiecare nod cu celelalte.
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 library(circlize)
 library(statnet)
 sociomat <- as.sociomatrix(netsym,attrname='passes')
@@ -384,7 +401,6 @@ chordDiagram(sociomat)
 detach("package:statnet", unload=TRUE)
 detach("package:circlize", unload=TRUE)
 ```
-
 # Capitolul 7: Importanta actantilor
 Un rol cheie pentru o buna intelegere a structurii unei retele este analiza nodurilor si descoperirea celor mai importante si celor critice. Analize similare se pot realiza si pentru relatiile dintre noduri.
 
@@ -393,6 +409,8 @@ detach("package:networkD3", unload=TRUE)
 detach("package:igraph", unload=TRUE)
 colors <- c("blue", "red")
 ```
+
+Putem spune ca un nod este un actor proeminent intr-o retea daca prezenta lui are un impact special asupra retelei. Urmeaza sa vedem cateva astfel de exemple.
 
 Vom incepe analiza cu determinarea nodurilor centrale dintr-o retea. Cele mai folosite masuri pentru aceasta sunt urmatoarele:
 
@@ -403,6 +421,7 @@ Vom incepe analiza cu determinarea nodurilor centrale dintr-o retea. Cele mai fo
 Mai jos, sunt expuse metodele pentru calculul centralitatii folosind aceste masuratori.
 ```{r}
 # Determining the centre nodes using the degree
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 deg <- degree(netsym, gmode="graph")
 plot(netsym,
      usearrows=FALSE, 
@@ -410,8 +429,10 @@ plot(netsym,
      label = netsym %v% "abrev_name",
      displaylabels=T,
      vertex.cex = deg/2)
+```
 
 # Determining the centre nodes using the closeness function
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 cls <- closeness(netsym, gmode="graph")
 plot(netsym,
      usearrows=FALSE, 
@@ -419,8 +440,10 @@ plot(netsym,
      label = netsym %v% "abrev_name",
      displaylabels=T,
      vertex.cex = cls*10)
+```
 
 # Determining the centre nodes using the betweenness function
+```{r, echo=FALSE, message=FALSE, results='hide', warning=FALSE}
 bet <- betweenness(netsym, gmode="graph")
 plot(netsym,
      usearrows=FALSE, 
